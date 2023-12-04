@@ -1,5 +1,6 @@
 package com.example;
 
+import com.example.service.AuthServiceImpl;
 import constants.Command;
 
 import java.io.IOException;
@@ -19,7 +20,7 @@ public class Server {
     public Server() {
 
         clients = new CopyOnWriteArrayList<>();
-        authService = new SimpleAuthService();
+        authService = new AuthServiceImpl();
         try {
             server = new ServerSocket(PORT);
             System.out.println("server was started");

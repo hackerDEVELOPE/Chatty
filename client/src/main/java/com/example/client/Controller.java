@@ -229,7 +229,7 @@ public class Controller implements Initializable {
 
     private void createRegStage(){
         try {
-            FXMLLoader fxmlLoader = new FXMLLoader(Application.class.getResource("reg.fxml"));
+            FXMLLoader fxmlLoader = new FXMLLoader(Application.class.getResource("/reg.fxml"));
             Parent root = fxmlLoader.load();
 
             regStage = new Stage();

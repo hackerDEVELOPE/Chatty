@@ -5,7 +5,7 @@ import java.sql.*;
 public class JDBC {
     private static Connection connection;
     public static Statement stmt;
-    private static PreparedStatement psInsert;
+    public static PreparedStatement psInsert;
 
 
 
@@ -37,6 +37,10 @@ public class JDBC {
         return rs = stmt.executeQuery("SELECT login, password FROM users");
     }
     // rs close??
+
+    public static void prepareStatement() throws SQLException {
+        psInsert = connection.prepareStatement("INSERT INTO users (login, password, nickname) VALUES (?, ?, ?)");
+    }
 
     public static void connect() throws Exception {
         Class.forName("org.sqlite.JDBC");
