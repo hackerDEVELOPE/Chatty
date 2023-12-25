@@ -19,10 +19,7 @@ import javafx.stage.Modality;
 import javafx.stage.Stage;
 import javafx.stage.StageStyle;
 
-import java.io.DataInputStream;
-import java.io.DataOutputStream;
-import java.io.EOFException;
-import java.io.IOException;
+import java.io.*;
 import java.net.Socket;
 import java.net.URISyntaxException;
 import java.net.URL;
@@ -57,7 +54,9 @@ public class Controller implements Initializable {
     private String nickname;
     private Stage stage;
     private Stage regStage;
-    private  RegController regController;
+    private RegController regController;
+    private RandomAccessFile raf;
+    private String login;
 
     public void setAuthenticated(boolean authenticated) {
         isAuthenticated = authenticated;
@@ -116,10 +115,13 @@ public class Controller implements Initializable {
                             }
                             if (str.startsWith(Command.AUTH_OK)) {
                                 nickname = str.split(" ")[1];
+                                //
+                                login = str.split(" ")[2];
+                                //
                                 setAuthenticated(true);
                                 break;
                             }
-                            if (str.equals(Command.REG_OK) || str.equals(Command.REG_FAIL)){
+                            if (str.equals(Command.REG_OK) || str.equals(Command.REG_FAIL)) {
                                 regController.result(str);
                             }
 
@@ -127,25 +129,33 @@ public class Controller implements Initializable {
                             textArea.appendText(str + "\n");
                         }
                     }
+                    raf = new RandomAccessFile("client/src/main/resources/history/history_"+login+".txt", "rw");
+//                    raf = new RandomAccessFile("client/src/main/resources/test.txt", "rw");
 
                     //цикл работы
                     while (isAuthenticated) {
                         String str = in.readUTF();
-                        if (str.startsWith("/")){
+                        if (str.startsWith("/")) {
                             if (str.equals(Command.END)) {
                                 break;
                             }
-                            if (str.startsWith(Command.CLIENTLIST)){
+                            if (str.startsWith(Command.CLIENTLIST)) {
                                 String[] token = str.split(" ");
-                                Platform.runLater(()->{
+                                Platform.runLater(() -> {
                                     clientList.getItems().clear();
                                     for (int i = 1; i < token.length; i++) {
                                         clientList.getItems().add(token[i]);
                                     }
                                 });
                             }
+
+                            if (str.startsWith("/yournickis ")) {
+                                nickname = str.split(" ")[1];
+                                setTitle(nickname);
+                            }
                         } else {
                             textArea.appendText(str + "\n");
+                            raf.writeBytes(str + "\n");
                         }
                     }
 
@@ -157,6 +167,7 @@ public class Controller implements Initializable {
                     setAuthenticated(false);
                     try {
                         socket.close();
+                        raf.close();
                     } catch (IOException e) {
                         e.printStackTrace();
                     }
@@ -227,7 +238,7 @@ public class Controller implements Initializable {
         textField.setText(String.format("/w %s ", receiver));
     }
 
-    private void createRegStage(){
+    private void createRegStage() {
         try {
             FXMLLoader fxmlLoader = new FXMLLoader(Application.class.getResource("/reg.fxml"));
             Parent root = fxmlLoader.load();
@@ -251,13 +262,14 @@ public class Controller implements Initializable {
     }
 
     public void tryToReg(ActionEvent actionEvent) {
-        if(regStage==null){
+        if (regStage == null) {
             createRegStage();
         }
 
         regStage.show();
     }
-    public void registration(String login,String password,String nickname){
+
+    public void registration(String login, String password, String nickname) {
         String msg = String.format(Command.REG + " %s %s %s", login, password, nickname);
 
         if (socket == null || socket.isClosed()) {

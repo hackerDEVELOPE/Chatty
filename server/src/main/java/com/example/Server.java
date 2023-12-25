@@ -17,9 +17,14 @@ public class Server {
     private AuthService authService;
 
 
-    public Server() {
+    public Server() throws Exception {
 
         clients = new CopyOnWriteArrayList<>();
+
+        if (!JDBC.connect()){
+            throw new RuntimeException("DB was fallen apart");
+        }
+
         authService = new AuthServiceImpl();
         try {
             server = new ServerSocket(PORT);
@@ -36,6 +41,7 @@ public class Server {
         } catch (IOException e) {
             e.printStackTrace();
         } finally {
+            JDBC.disconnect();
             try {
                 socket.close();
             } catch (IOException e) {

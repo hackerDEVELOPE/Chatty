@@ -5,7 +5,9 @@ import java.sql.*;
 public class JDBC {
     private static Connection connection;
     public static Statement stmt;
-    public static PreparedStatement psInsert;
+    public static PreparedStatement psRegistration;
+    public static PreparedStatement psGetNickname;
+    public static PreparedStatement psChangeNick;
 
 
 
@@ -22,13 +24,28 @@ public class JDBC {
         return true;
     }
 
-    public static String getNicknameByLoginAndPassword (String login, String password) throws SQLException {
-        ResultSet rs = stmt.executeQuery("SELECT login, password FROM users");
-        while (rs.next()){
-            if (rs.getString("login").equals(login) &&
-                    rs.getString("password").equals(password)){
-                return rs.getString("nickname");
+//    public static String getNicknameByLoginAndPassword (String login, String password) throws SQLException {
+//        ResultSet rs = stmt.executeQuery("SELECT login, password FROM users");
+//        while (rs.next()){
+//            if (rs.getString("login").equals(login) &&
+//                    rs.getString("password").equals(password)){
+//                return rs.getString("nickname");
+//            }
+//        }
+//        return null;
+//    }
+    public  static String getNicknameByLoginAndPassword (String login, String password){
+        String nick = null;
+        try {
+            psGetNickname.setString(1, login);
+            psGetNickname.setString(2, password);
+            ResultSet rs = psGetNickname.executeQuery();
+            if (rs.next()){
+                nick = rs.getString(1);
             }
+            rs.close();
+        } catch (SQLException e){
+            e.printStackTrace();
         }
         return null;
     }
@@ -39,17 +56,31 @@ public class JDBC {
     // rs close??
 
     public static void prepareStatement() throws SQLException {
-        psInsert = connection.prepareStatement("INSERT INTO users (login, password, nickname) VALUES (?, ?, ?)");
+
+        psGetNickname = connection.prepareStatement("SELECT nickname FROM users WHERE login = ? AND password = ? ");
+        psRegistration = connection.prepareStatement("INSERT INTO users (login, password, nickname) VALUES (?, ?, ?)");
+        psChangeNick = connection.prepareStatement("UPDATE users SET nickname = ? WHERE nickname = ?");
     }
 
-    public static void connect() throws Exception {
-        Class.forName("org.sqlite.JDBC");
-        connection = DriverManager.getConnection("jdbc:sqlite:whatsApp.db");
-        stmt = connection.createStatement();
+    public static boolean connect() throws Exception {
+        try {
+            Class.forName("org.sqlite.JDBC");
+            connection = DriverManager.getConnection("jdbc:sqlite:whatsApp.db");
+            stmt = connection.createStatement();
+            prepareStatement();
+            return true;
+        } catch (Exception e){
+            e.printStackTrace();
+            return false;
+        }
+
     }
     public static void disconnect(){
         try {
             stmt.close();
+            psRegistration.close();
+            psGetNickname.close();
+            psChangeNick.close();
         } catch (SQLException e) {
             e.printStackTrace();
         }

@@ -23,4 +23,9 @@ public class AuthServiceImpl implements com.example.AuthService {
     public boolean registration(String login, String password, String nickname) {
         return authRepository.saveUser(login, password, nickname);
     }
+
+    @Override
+    public boolean changeNick(String oldNick, String newNick) {
+        return authRepository.changeNick(oldNick, newNick);
+    }
 }

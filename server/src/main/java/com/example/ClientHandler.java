@@ -52,7 +52,7 @@ public class ClientHandler {
                                     if (!server.isAccAuthenticated(login)) {
                                         nickname = newNick;
                                         isAuthenticated = true;
-                                        sendMsg(Command.AUTH_OK+ " " + nickname + " есть контакт блять");
+                                        sendMsg(Command.AUTH_OK+ " " + nickname+ " " + login);
                                         server.subscribe(this);
                                         socket.setSoTimeout(0);
                                         break;
@@ -97,6 +97,24 @@ public class ClientHandler {
                                     continue;
                                 }
                                 server.privateMsg(this, token[1], token[2]);
+                            }
+                            if (str.startsWith(Command.NICK)){
+                                String[] token = str.split("\\s+", 2);
+                                if (token.length<2){
+                                    continue;
+                                }
+                                if(token[1].contains(" ")){
+                                    sendMsg("Nickname can't have spaces");
+                                    continue;
+                                }
+                                if (server.getAuthService().changeNick(this.nickname, token[1])){
+                                    sendMsg("/yournickis "+ token[1]);
+                                    sendMsg("Your nickname changed to "+ token[1]);
+                                    this.nickname = token[1];
+                                    server.broadcastClientList();
+                                } else {
+                                    sendMsg("Nickname " + token[1]+ " already taken");
+                                }
                             }
                         } else {
                             server.broadcastMsg(this, str);
