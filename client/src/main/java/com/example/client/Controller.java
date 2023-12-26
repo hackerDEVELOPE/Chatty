@@ -23,6 +23,10 @@ import java.io.*;
 import java.net.Socket;
 import java.net.URISyntaxException;
 import java.net.URL;
+import java.nio.file.Files;
+import java.nio.file.Paths;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.ResourceBundle;
 
 
@@ -55,7 +59,14 @@ public class Controller implements Initializable {
     private Stage stage;
     private Stage regStage;
     private RegController regController;
+
+
     private RandomAccessFile raf;
+    private FileOutputStream fileOutputStream;
+//    private File history;
+    private List<String> historyList;
+    private int indexForList;
+
     private String login;
 
     public void setAuthenticated(boolean authenticated) {
@@ -129,9 +140,10 @@ public class Controller implements Initializable {
                             textArea.appendText(str + "\n");
                         }
                     }
-                    raf = new RandomAccessFile("client/src/main/resources/history/history_"+login+".txt", "rw");
-//                    raf = new RandomAccessFile("client/src/main/resources/test.txt", "rw");
-
+                    //===============================================================//
+                    fileOutputStream = new FileOutputStream("client/src/main/resources/history/history_"+login+".txt", true);
+                    chatHistory();
+                    //===============================================================//
                     //цикл работы
                     while (isAuthenticated) {
                         String str = in.readUTF();
@@ -155,7 +167,11 @@ public class Controller implements Initializable {
                             }
                         } else {
                             textArea.appendText(str + "\n");
-                            raf.writeBytes(str + "\n");
+
+
+//                            raf.writeBytes(str + "\n");
+                            fileOutputStream.write((str+"\n").getBytes());
+
                         }
                     }
 
@@ -167,7 +183,8 @@ public class Controller implements Initializable {
                     setAuthenticated(false);
                     try {
                         socket.close();
-                        raf.close();
+//                        raf.close();
+                        fileOutputStream.close();
                     } catch (IOException e) {
                         e.printStackTrace();
                     }
@@ -177,6 +194,13 @@ public class Controller implements Initializable {
 
         } catch (Exception e) {
             e.printStackTrace();
+        }
+    }
+    private void chatHistory() throws IOException {
+        historyList = new ArrayList<>(Files.readAllLines(Paths.get("client/src/main/resources/history/history_"+login+".txt")));
+        indexForList = historyList.size() <= 100 ? 0 : historyList.size() - 100;
+        for (int i = indexForList; i < historyList.size(); i++) {
+            textArea.appendText(historyList.get(i)+"\n");
         }
     }
 
