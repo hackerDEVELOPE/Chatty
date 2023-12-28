@@ -81,6 +81,7 @@ public class Controller implements Initializable {
 
         if (!authenticated) {
             nickname = "";
+            History.stop();
         }
         setTitle(nickname);
 
@@ -130,6 +131,10 @@ public class Controller implements Initializable {
                                 login = str.split(" ")[2];
                                 //
                                 setAuthenticated(true);
+                                //
+                                textArea.appendText(History.getLast100LinesOfHistory(login));
+                                History.start(login);
+                                //
                                 break;
                             }
                             if (str.equals(Command.REG_OK) || str.equals(Command.REG_FAIL)) {
@@ -141,8 +146,8 @@ public class Controller implements Initializable {
                         }
                     }
                     //===============================================================//
-                    fileOutputStream = new FileOutputStream("client/src/main/resources/history/history_"+login+".txt", true);
-                    chatHistory();
+//                    fileOutputStream = new FileOutputStream("client/src/main/resources/history/history_"+login+".txt", true);
+//                    chatHistory();
                     //===============================================================//
                     //цикл работы
                     while (isAuthenticated) {
@@ -170,7 +175,9 @@ public class Controller implements Initializable {
 
 
 //                            raf.writeBytes(str + "\n");
-                            fileOutputStream.write((str+"\n").getBytes());
+//                            fileOutputStream.write((str+"\n").getBytes());
+
+                            History.writeLine(str);
 
                         }
                     }
@@ -184,7 +191,7 @@ public class Controller implements Initializable {
                     try {
                         socket.close();
 //                        raf.close();
-                        fileOutputStream.close();
+//                        fileOutputStream.close();
                     } catch (IOException e) {
                         e.printStackTrace();
                     }
@@ -196,13 +203,13 @@ public class Controller implements Initializable {
             e.printStackTrace();
         }
     }
-    private void chatHistory() throws IOException {
-        historyList = new ArrayList<>(Files.readAllLines(Paths.get("client/src/main/resources/history/history_"+login+".txt")));
-        indexForList = historyList.size() <= 100 ? 0 : historyList.size() - 100;
-        for (int i = indexForList; i < historyList.size(); i++) {
-            textArea.appendText(historyList.get(i)+"\n");
-        }
-    }
+//    private void chatHistory() throws IOException {
+//        historyList = new ArrayList<>(Files.readAllLines(Paths.get("client/src/main/resources/history/history_"+login+".txt")));
+//        indexForList = historyList.size() <= 100 ? 0 : historyList.size() - 100;
+//        for (int i = indexForList; i < historyList.size(); i++) {
+//            textArea.appendText(historyList.get(i)+"\n");
+//        }
+//    }
 
     public void enterMsg(ActionEvent actionEvent) {
 

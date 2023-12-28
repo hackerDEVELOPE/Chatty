@@ -8,6 +8,8 @@ import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 public class Server {
     private ServerSocket server;
@@ -17,14 +19,18 @@ public class Server {
     private AuthService authService;
 
 
+    private ExecutorService service;
+
+
     public Server() throws Exception {
 
+        //
+        service = Executors.newCachedThreadPool();
+        //
         clients = new CopyOnWriteArrayList<>();
-
         if (!JDBC.connect()){
             throw new RuntimeException("DB was fallen apart");
         }
-
         authService = new AuthServiceImpl();
         try {
             server = new ServerSocket(PORT);
@@ -34,7 +40,7 @@ public class Server {
             while (true) {
                 socket = server.accept();
                 System.out.println("client was connected");
-                new ClientHandler(this, socket);
+                new ClientHandler(this, socket, service);
             }
 
 

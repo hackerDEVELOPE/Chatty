@@ -8,6 +8,7 @@ import java.io.DataOutputStream;
 import java.io.IOException;
 import java.net.Socket;
 import java.net.SocketTimeoutException;
+import java.util.concurrent.ExecutorService;
 
 public class ClientHandler {
     private Server server;
@@ -18,15 +19,23 @@ public class ClientHandler {
     private String nickname;
     private String login;
 
-    public ClientHandler(Server server, Socket socket) {
+
+    private ExecutorService service;
+
+    public ClientHandler(Server server, Socket socket, ExecutorService service) {
         try {
             this.server = server;
             this.socket = socket;
+            this.service = service;
             in = new DataInputStream(socket.getInputStream());
             out = new DataOutputStream(socket.getOutputStream());
 
 
-            new Thread(() -> {
+//            new Thread(() -> {
+            service.execute(() -> {
+
+                System.out.println(Thread.currentThread().getName());
+
                 try {
                     socket.setSoTimeout(5000);
                     //цикл аутентификации
@@ -52,7 +61,7 @@ public class ClientHandler {
                                     if (!server.isAccAuthenticated(login)) {
                                         nickname = newNick;
                                         isAuthenticated = true;
-                                        sendMsg(Command.AUTH_OK+ " " + nickname+ " " + login);
+                                        sendMsg(Command.AUTH_OK + " " + nickname + " " + login);
                                         server.subscribe(this);
                                         socket.setSoTimeout(0);
                                         break;
@@ -98,22 +107,22 @@ public class ClientHandler {
                                 }
                                 server.privateMsg(this, token[1], token[2]);
                             }
-                            if (str.startsWith(Command.NICK)){
+                            if (str.startsWith(Command.NICK)) {
                                 String[] token = str.split("\\s+", 2);
-                                if (token.length<2){
+                                if (token.length < 2) {
                                     continue;
                                 }
-                                if(token[1].contains(" ")){
+                                if (token[1].contains(" ")) {
                                     sendMsg("Nickname can't have spaces");
                                     continue;
                                 }
-                                if (server.getAuthService().changeNick(this.nickname, token[1])){
-                                    sendMsg("/yournickis "+ token[1]);
-                                    sendMsg("Your nickname changed to "+ token[1]);
+                                if (server.getAuthService().changeNick(this.nickname, token[1])) {
+                                    sendMsg("/yournickis " + token[1]);
+                                    sendMsg("Your nickname changed to " + token[1]);
                                     this.nickname = token[1];
                                     server.broadcastClientList();
                                 } else {
-                                    sendMsg("Nickname " + token[1]+ " already taken");
+                                    sendMsg("Nickname " + token[1] + " already taken");
                                 }
                             }
                         } else {
@@ -136,8 +145,8 @@ public class ClientHandler {
                         e.printStackTrace();
                     }
                 }
-            }).start();
-
+//            }).start();
+            });
         } catch (IOException e) {
             e.printStackTrace();
         }
