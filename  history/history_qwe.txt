@@ -57,3 +57,8 @@
 [maxz]: d
 [maxz]: d
 [maxz]: d
+[qwe]: yoooou
+[qwe]: www
+Your nickname changed to qqq
+[asd]: wdwd
+#private# [asd]: wwww

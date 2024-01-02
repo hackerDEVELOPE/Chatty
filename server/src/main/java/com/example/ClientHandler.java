@@ -5,10 +5,14 @@ import constants.Command;
 
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
+import java.io.FileInputStream;
 import java.io.IOException;
 import java.net.Socket;
 import java.net.SocketTimeoutException;
 import java.util.concurrent.ExecutorService;
+import java.util.logging.Level;
+import java.util.logging.LogManager;
+import java.util.logging.Logger;
 
 public class ClientHandler {
     private Server server;
@@ -18,12 +22,16 @@ public class ClientHandler {
     private boolean isAuthenticated;
     private String nickname;
     private String login;
-
-
     private ExecutorService service;
+
+    private static final Logger logger = Logger.getLogger(ClientHandler.class.getName());
+    LogManager manager = LogManager.getLogManager();
+
 
     public ClientHandler(Server server, Socket socket, ExecutorService service) {
         try {
+            manager.readConfiguration(new FileInputStream("server/logging.properties"));
+
             this.server = server;
             this.socket = socket;
             this.service = service;
@@ -34,7 +42,7 @@ public class ClientHandler {
 //            new Thread(() -> {
             service.execute(() -> {
 
-                System.out.println(Thread.currentThread().getName());
+//                System.out.println(Thread.currentThread().getName());
 
                 try {
                     socket.setSoTimeout(5000);
@@ -45,7 +53,7 @@ public class ClientHandler {
                         if (str.startsWith("/")) {
 
                             if (str.equals(Command.END)) {
-                                sendMsg(Command.END); // watafak
+                                sendMsg(Command.END);
                                 break;
                             }
 
@@ -62,6 +70,9 @@ public class ClientHandler {
                                         nickname = newNick;
                                         isAuthenticated = true;
                                         sendMsg(Command.AUTH_OK + " " + nickname + " " + login);
+
+                                        logger.log(Level.FINE, nickname + " have been authed");
+
                                         server.subscribe(this);
                                         socket.setSoTimeout(0);
                                         break;
@@ -83,6 +94,8 @@ public class ClientHandler {
                                         .registration(token[1], token[2], token[3])) {
 
                                     sendMsg(Command.REG_OK);
+
+                                    logger.log(Level.FINE, token[3] + " have been registrated");
                                 } else {
                                     sendMsg(Command.REG_FAIL);
                                 }
@@ -121,6 +134,7 @@ public class ClientHandler {
                                     sendMsg("Your nickname changed to " + token[1]);
                                     this.nickname = token[1];
                                     server.broadcastClientList();
+                                    logger.log(Level.FINE, this.nickname + " changed nickname");
                                 } else {
                                     sendMsg("Nickname " + token[1] + " already taken");
                                 }
@@ -138,16 +152,19 @@ public class ClientHandler {
                     e.printStackTrace();
                 } finally {
                     server.unsubscribe(this);
-                    System.out.println("Client was disconnected");
+                    logger.log(Level.FINE, this.nickname + " was disconnected");
+//                    System.out.println("Client was disconnected");
                     try {
                         socket.close();
                     } catch (IOException e) {
+                        logger.log(Level.SEVERE, "Exception", e);
                         e.printStackTrace();
                     }
                 }
 //            }).start();
             });
         } catch (IOException e) {
+            logger.log(Level.SEVERE, "Exception", e);
             e.printStackTrace();
         }
 

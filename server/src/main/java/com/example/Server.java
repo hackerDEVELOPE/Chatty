@@ -3,6 +3,7 @@ package com.example;
 import com.example.service.AuthServiceImpl;
 import constants.Command;
 
+import java.io.FileInputStream;
 import java.io.IOException;
 import java.net.ServerSocket;
 import java.net.Socket;
@@ -10,6 +11,9 @@ import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.logging.Level;
+import java.util.logging.LogManager;
+import java.util.logging.Logger;
 
 public class Server {
     private ServerSocket server;
@@ -18,11 +22,15 @@ public class Server {
     private List<ClientHandler> clients;
     private AuthService authService;
 
-
     private ExecutorService service;
+
+    private static final Logger logger = Logger.getLogger(Server.class.getName());;
 
 
     public Server() throws Exception {
+
+        LogManager manager = LogManager.getLogManager();
+        manager.readConfiguration(new FileInputStream("server/logging.properties"));
 
         //
         service = Executors.newCachedThreadPool();
@@ -34,28 +42,34 @@ public class Server {
         authService = new AuthServiceImpl();
         try {
             server = new ServerSocket(PORT);
-            System.out.println("server was started");
+//            System.out.println("server was started");
+            logger.log(Level.INFO, "server was started");
 
 
             while (true) {
                 socket = server.accept();
-                System.out.println("client was connected");
+//                System.out.println("client was connected");
+                logger.log(Level.INFO, "client was connected");
                 new ClientHandler(this, socket, service);
             }
 
 
         } catch (IOException e) {
+            logger.log(Level.SEVERE, "Exception", e);
             e.printStackTrace();
         } finally {
+            service.shutdown();
             JDBC.disconnect();
             try {
                 socket.close();
             } catch (IOException e) {
+                logger.log(Level.SEVERE, "Exception", e);
                 e.printStackTrace();
             }
             try {
                 server.close();
             } catch (IOException e) {
+                logger.log(Level.SEVERE, "Exception", e);
                 e.printStackTrace();
             }
         }
@@ -64,6 +78,7 @@ public class Server {
     public void broadcastMsg(ClientHandler sender, String msg) {
 
         String message = String.format("[%s]: %s", sender.getNickname(), msg);
+        logger.log(Level.FINE, sender.getNickname()+ " send a message");
         for (ClientHandler client : clients) {
             client.sendMsg(message);
         }
@@ -71,6 +86,7 @@ public class Server {
 
     public void privateMsg(ClientHandler sender, String receiver, String msg) {
         String message = String.format("#private# [%s]: %s", sender.getNickname(), msg);
+        logger.log(Level.FINE, sender.getNickname()+ " send a private message to "+receiver);
         for (ClientHandler client : clients) {
             if (client.getNickname().equals(receiver)) {
                 client.sendMsg(message);
