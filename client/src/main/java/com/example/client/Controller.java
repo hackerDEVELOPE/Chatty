@@ -63,7 +63,6 @@ public class Controller implements Initializable {
 
     private RandomAccessFile raf;
     private FileOutputStream fileOutputStream;
-//    private File history;
     private List<String> historyList;
     private int indexForList;
 
@@ -77,16 +76,12 @@ public class Controller implements Initializable {
         msgPanel.setManaged(authenticated);
         clientList.setVisible(authenticated);
         clientList.setManaged(authenticated);
-
-
         if (!authenticated) {
             nickname = "";
             History.stop();
         }
         setTitle(nickname);
-
         textArea.clear();
-
     }
 
     @Override
@@ -112,43 +107,31 @@ public class Controller implements Initializable {
             socket = new Socket(ADDRESS, PORT);
             in = new DataInputStream(socket.getInputStream());
             out = new DataOutputStream(socket.getOutputStream());
-
             new Thread(() -> {
                 try {
-
                     //цикл аутентификации
                     while (true) {
                         String str = in.readUTF();
-
                         if (str.startsWith("/")) {
-
                             if (str.equals(Command.END)) {
                                 break;
                             }
                             if (str.startsWith(Command.AUTH_OK)) {
                                 nickname = str.split(" ")[1];
-                                //
                                 login = str.split(" ")[2];
-                                //
                                 setAuthenticated(true);
-                                //
                                 textArea.appendText(History.getLast100LinesOfHistory(login));
                                 History.start(login);
-                                //
                                 break;
                             }
                             if (str.equals(Command.REG_OK) || str.equals(Command.REG_FAIL)) {
                                 regController.result(str);
                             }
-
                         } else {
                             textArea.appendText(str + "\n");
                         }
                     }
-                    //===============================================================//
-//                    fileOutputStream = new FileOutputStream("client/src/main/resources/history/history_"+login+".txt", true);
-//                    chatHistory();
-                    //===============================================================//
+
                     //цикл работы
                     while (isAuthenticated) {
                         String str = in.readUTF();
@@ -172,47 +155,26 @@ public class Controller implements Initializable {
                             }
                         } else {
                             textArea.appendText(str + "\n");
-
-
-//                            raf.writeBytes(str + "\n");
-//                            fileOutputStream.write((str+"\n").getBytes());
-
                             History.writeLine(str);
-
                         }
                     }
-
-
                 } catch (IOException e) {
                     e.printStackTrace();
-
                 } finally {
                     setAuthenticated(false);
                     try {
                         socket.close();
-//                        raf.close();
-//                        fileOutputStream.close();
                     } catch (IOException e) {
                         e.printStackTrace();
                     }
                 }
-
             }).start();
-
         } catch (Exception e) {
             e.printStackTrace();
         }
     }
-//    private void chatHistory() throws IOException {
-//        historyList = new ArrayList<>(Files.readAllLines(Paths.get("client/src/main/resources/history/history_"+login+".txt")));
-//        indexForList = historyList.size() <= 100 ? 0 : historyList.size() - 100;
-//        for (int i = indexForList; i < historyList.size(); i++) {
-//            textArea.appendText(historyList.get(i)+"\n");
-//        }
-//    }
 
     public void enterMsg(ActionEvent actionEvent) {
-
         try {
             out.writeUTF(textField.getText());
             textField.clear();
@@ -220,7 +182,6 @@ public class Controller implements Initializable {
         } catch (IOException e) {
             e.printStackTrace();
         }
-
 
         if (mediaView.getMediaPlayer() == null) {
             try {
@@ -234,8 +195,6 @@ public class Controller implements Initializable {
         }
         mediaView.getMediaPlayer().seek(mediaView.getMediaPlayer().getStartTime());
         mediaView.getMediaPlayer().play();
-
-
     }
 
     public void tryToAuth(ActionEvent actionEvent) {
@@ -255,9 +214,9 @@ public class Controller implements Initializable {
     private void setTitle(String nickname) {
         String title;
         if (nickname.equals("")) {
-            title = "WHATSAPP 2";
+            title = "Chatty";
         } else {
-            title = String.format("WHATSAPP 2 - [%s]", nickname);
+            title = String.format("Chatty - [%s]", nickname);
         }
         Platform.runLater(() -> {
             stage.setTitle(title);
@@ -276,7 +235,7 @@ public class Controller implements Initializable {
 
             regStage = new Stage();
 
-            regStage.setTitle("WHATSAPP 2 REGISTRATION");
+            regStage.setTitle("Chatty registration");
             regStage.setScene(new Scene(root, 600, 500));
 
             regController = fxmlLoader.getController();
@@ -285,18 +244,14 @@ public class Controller implements Initializable {
             regStage.initStyle(StageStyle.UTILITY);
             regStage.initModality(Modality.APPLICATION_MODAL);
 
-
         } catch (IOException e) {
             e.printStackTrace();
         }
-
     }
-
     public void tryToReg(ActionEvent actionEvent) {
         if (regStage == null) {
             createRegStage();
         }
-
         regStage.show();
     }
 

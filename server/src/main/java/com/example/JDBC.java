@@ -9,9 +9,6 @@ public class JDBC {
     public static PreparedStatement psGetNickname;
     public static PreparedStatement psChangeNick;
 
-
-
-
     public static boolean regUser(String login, String password, String nickname) throws SQLException {
         ResultSet rs = select();
         while (rs.next()){
@@ -23,17 +20,6 @@ public class JDBC {
         stmt.executeUpdate("INSERT INTO users (login, password, nickname) VALUES (login, password, nickname)");
         return true;
     }
-
-//    public static String getNicknameByLoginAndPassword (String login, String password) throws SQLException {
-//        ResultSet rs = stmt.executeQuery("SELECT login, password FROM users");
-//        while (rs.next()){
-//            if (rs.getString("login").equals(login) &&
-//                    rs.getString("password").equals(password)){
-//                return rs.getString("nickname");
-//            }
-//        }
-//        return null;
-//    }
     public  static String getNicknameByLoginAndPassword (String login, String password){
         String nick = null;
         try {
@@ -53,7 +39,6 @@ public class JDBC {
         ResultSet rs;
         return rs = stmt.executeQuery("SELECT login, password FROM users");
     }
-    // rs close??
 
     public static void prepareStatement() throws SQLException {
 
@@ -65,7 +50,7 @@ public class JDBC {
     public static boolean connect() throws Exception {
         try {
             Class.forName("org.sqlite.JDBC");
-            connection = DriverManager.getConnection("jdbc:sqlite:whatsApp.db");
+            connection = DriverManager.getConnection("jdbc:sqlite:chatty.db");
             stmt = connection.createStatement();
             prepareStatement();
             return true;

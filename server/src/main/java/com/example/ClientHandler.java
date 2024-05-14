@@ -35,25 +35,19 @@ public class ClientHandler {
             in = new DataInputStream(socket.getInputStream());
             out = new DataOutputStream(socket.getOutputStream());
 
-
-//            new Thread(() -> {
             service.execute(() -> {
-
-//                System.out.println(Thread.currentThread().getName());
 
                 try {
                     socket.setSoTimeout(5000);
+
                     //цикл аутентификации
                     while (true) {
                         String str = in.readUTF();
-
                         if (str.startsWith("/")) {
-
                             if (str.equals(Command.END)) {
                                 sendMsg(Command.END);
                                 break;
                             }
-
                             if (str.startsWith(Command.AUTH)) {
                                 String[] token = str.split(" ", 3);
                                 if (token.length < 3) {
@@ -76,11 +70,9 @@ public class ClientHandler {
                                     } else {
                                         sendMsg("Аккаунт уже авторизован");
                                     }
-
                                 } else {
                                     sendMsg("invalid login or password");
                                 }
-
                             }
                             if (str.startsWith(Command.REG)) {
                                 String[] token = str.split(" ");
@@ -89,10 +81,8 @@ public class ClientHandler {
                                 }
                                 if (server.getAuthService()
                                         .registration(token[1], token[2], token[3])) {
-
                                     sendMsg(Command.REG_OK);
-
-                                    logger.log(Level.FINE, token[3] + " have been registrated");
+                                    logger.log(Level.FINE, token[3] + " have been registered");
                                 } else {
                                     sendMsg(Command.REG_FAIL);
                                 }
@@ -104,7 +94,6 @@ public class ClientHandler {
 
                     //цикл работы
                     while (isAuthenticated) {
-//                        socket.setSoTimeout(0);
                         String str = in.readUTF();
                         if (str.startsWith("/")) {
                             if (str.equals(Command.END)) {
@@ -150,7 +139,6 @@ public class ClientHandler {
                 } finally {
                     server.unsubscribe(this);
                     logger.log(Level.FINE, this.nickname + " was disconnected");
-//                    System.out.println("Client was disconnected");
                     try {
                         socket.close();
                     } catch (IOException e) {
@@ -158,7 +146,6 @@ public class ClientHandler {
                         e.printStackTrace();
                     }
                 }
-//            }).start();
             });
         } catch (IOException e) {
             logger.log(Level.SEVERE, "Exception", e);

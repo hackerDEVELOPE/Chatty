@@ -28,10 +28,7 @@ public class Server {
 
     public Server() throws Exception {
 
-
-        //
         service = Executors.newCachedThreadPool();
-        //
         clients = new CopyOnWriteArrayList<>();
         if (!JDBC.connect()){
             throw new RuntimeException("DB was fallen apart");
@@ -39,13 +36,10 @@ public class Server {
         authService = new AuthServiceImpl();
         try {
             server = new ServerSocket(PORT);
-//            System.out.println("server was started");
             logger.log(Level.INFO, "server was started");
-
 
             while (true) {
                 socket = server.accept();
-//                System.out.println("client was connected");
                 logger.log(Level.INFO, "client was connected");
                 new ClientHandler(this, socket, service);
             }
