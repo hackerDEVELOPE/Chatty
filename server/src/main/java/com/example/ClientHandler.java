@@ -11,7 +11,6 @@ import java.net.Socket;
 import java.net.SocketTimeoutException;
 import java.util.concurrent.ExecutorService;
 import java.util.logging.Level;
-import java.util.logging.LogManager;
 import java.util.logging.Logger;
 
 public class ClientHandler {
@@ -25,12 +24,10 @@ public class ClientHandler {
     private ExecutorService service;
 
     private static final Logger logger = Logger.getLogger(ClientHandler.class.getName());
-    LogManager manager = LogManager.getLogManager();
 
 
     public ClientHandler(Server server, Socket socket, ExecutorService service) {
         try {
-            manager.readConfiguration(new FileInputStream("server/logging.properties"));
 
             this.server = server;
             this.socket = socket;

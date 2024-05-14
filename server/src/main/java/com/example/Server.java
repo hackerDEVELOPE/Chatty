@@ -12,7 +12,6 @@ import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.logging.Level;
-import java.util.logging.LogManager;
 import java.util.logging.Logger;
 
 public class Server {
@@ -29,8 +28,6 @@ public class Server {
 
     public Server() throws Exception {
 
-        LogManager manager = LogManager.getLogManager();
-        manager.readConfiguration(new FileInputStream("server/logging.properties"));
 
         //
         service = Executors.newCachedThreadPool();
