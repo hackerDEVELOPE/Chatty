@@ -32,11 +32,11 @@ public class RegController {
         controller.registration(login, password, nickname);
     }
 
-    public void result(String command){
-        if(command.equals(Command.REG_OK)){
-            textArea.appendText("Регистрация была успешной\n");
-        }else {
-            textArea.appendText("Регистрация была провалена\n");
+    public void result(String command) {
+        if (command.equals(Command.REG_OK)) {
+            textArea.appendText("registration was successful \n");
+        } else {
+            textArea.appendText("registration was failed \n");
         }
     }
 }

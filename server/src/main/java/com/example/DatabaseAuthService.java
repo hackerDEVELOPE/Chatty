@@ -10,4 +10,9 @@ public class DatabaseAuthService implements AuthService{
     public boolean registration(String login, String password, String nickname) {
         return false;
     }
+
+    @Override
+    public boolean changeNick(String oldNick, String newNick) {
+        return false;
+    }
 }
